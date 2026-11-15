@@ -12,7 +12,7 @@ useEffect(()=>{(async()=>{try{let raw=await AsyncStorage.getItem(KEY);if(raw){le
 const go=useCallback(i=>{let u='https://www.wildberries.ru/catalog/0/search.aspx?search='+encodeURIComponent(QUERIES[i%QUERIES.length]);web.current?.injectJavaScript('window.location.href='+JSON.stringify(u)+';true;');},[]);
 const onMessage=useCallback(async e=>{try{let m=JSON.parse(e.nativeEvent.data);if(m.type!=='WB_PRODUCTS'||!Array.isArray(m.items))return;let fresh=[];
 m.items.forEach(p=>{let id=String(p.nmId||''),old=Number(p.originalPrice),now=Number(p.salePrice),d=old>0?Math.round((old-now)*100/old):0;
-if(!/^\\d{5,}$/.test(id)||!p.productUrl?.startsWith('https://www.wildberries.ru/catalog/')||!now||!old||d<=THRESHOLD||seen.current.has(id))return;
+if(!/^\d{5,}$/.test(id)||!p.productUrl?.startsWith('https://www.wildberries.ru/catalog/')||!now||!old||old<=now||d<=THRESHOLD||d>=100||now>100000000||old>100000000||seen.current.has(id))return;
 seen.current.add(id);fresh.push({...p,discountPercent:d,foundAt:Date.now()});});
 if(fresh.length)setProducts(prev=>{let next=[...fresh,...prev].slice(0,500);AsyncStorage.setItem(KEY,JSON.stringify(next)).catch(()=>{});return next;});
 setStatus(fresh.length?'Новых находок: '+fresh.length:'Проверка завершена');setLastScan(new Date().toLocaleTimeString());setLoading(false);
